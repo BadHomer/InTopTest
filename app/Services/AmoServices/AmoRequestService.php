@@ -30,8 +30,8 @@ class AmoRequestService
     public function sendAuthRequest(AmoGrantTypeEnums $grant_type, string $code)
     {
         $data = [
-            'client_id' => $_ENV['CLIENT_ID'],
-            'client_secret' => $_ENV['CLIENT_SECRET'],
+            'client_id' => $_ENV['AMO_CLIENT_ID'],
+            'client_secret' => $_ENV['AMO_CLIENT_SECRET'],
             'grant_type' => $grant_type->name,
             $grant_type->value => $code,
             'redirect_uri' => $_ENV['APP_URL'],

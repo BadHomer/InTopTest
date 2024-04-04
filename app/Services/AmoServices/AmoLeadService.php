@@ -12,7 +12,7 @@ class AmoLeadService extends AmoModelService
     public function createLead(array $data)
     {
         $leadData = [
-            'name' => 'Сделка от ' . date('d/m/y H:i'),
+            'name' => 'Заявка с сайта ' . date('d-m-y/H:i'),
             'comment' => $data['lead']['comment']
         ];
 
@@ -27,7 +27,7 @@ class AmoLeadService extends AmoModelService
         try {
             return $this->requestService->sendRequest('POST', '/api/v4/leads/complex', $requestData);
         } catch (ClientException $e) {
-            throw $e->getResponse()->getBody()->getContents();
+            return $e->getResponse()->getBody()->getContents();
         }
     }
 

@@ -19,7 +19,7 @@ class BitrixDealService
     public function createDeal(array $data)
     {
         $dealData = [
-            'name' => 'Сделка от ' . date('d/m/y H:i'),
+            'name' => 'Заявка с сайта ' . date('d-m-y/H:i'),
             'comment' => $data['lead']['comment'],
         ];
 
