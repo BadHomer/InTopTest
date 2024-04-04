@@ -6,7 +6,6 @@ use App\Services\AmoServices\Enums\AmoGrantTypeEnums;
 
 class AmoAuthService
 {
-
     private AmoRequestService $requestService;
 
     public function __construct()

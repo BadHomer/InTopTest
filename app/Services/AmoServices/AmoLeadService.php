@@ -26,22 +26,22 @@ class AmoLeadService extends AmoModelService
 
         try {
             return $this->requestService->sendRequest('POST', '/api/v4/leads/complex', $requestData);
-        }catch (ClientException $e) {
-            return $e->getResponse()->getBody()->getContents();
+        } catch (ClientException $e) {
+            throw $e->getResponse()->getBody()->getContents();
         }
     }
 
     private function toRequestData(Lead $lead, object $_embedded = null, array $customFieldsValues = [])
     {
         $leadObj = new \stdClass();
-            $leadObj->name = $lead->name;
-            $leadObj->custom_fields_values = $customFieldsValues;
-            $leadObj->created_by = 0;
-            $leadObj->responsible_user_id = 10893710;
-            $leadObj->_embedded = $_embedded;
-            $leadObj->tags_to_add = [
-                (object) ['name' => 'сайт']
-            ];
+
+        $leadObj->name = $lead->name;
+        $leadObj->custom_fields_values = $customFieldsValues;
+        $leadObj->_embedded = $_embedded;
+        $leadObj->tags_to_add = [
+            (object)['name' => 'сайт']
+        ];
+
         return [$leadObj];
 
     }
@@ -50,7 +50,7 @@ class AmoLeadService extends AmoModelService
     {
         $contactData = $data['contact'] ?? null;
 
-        if($contactData === null) {
+        if ($contactData === null) {
             return null;
         }
 

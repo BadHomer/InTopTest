@@ -4,13 +4,13 @@ namespace App\Services\AmoServices;
 
 use App\Services\AmoServices\Enums\AmoGrantTypeEnums;
 use GuzzleHttp\Client;
-use http\Header;
 
 class AmoRequestService
 {
     private function baseSendRequest(string $method, string $uri, array $data = [], array $headers = []): mixed
     {
         $url = $_ENV['AMO_URL'] . $uri;
+
         $options = [
             'json' => $data,
             'headers' => $headers
@@ -43,10 +43,12 @@ class AmoRequestService
     public function sendRequest(string $method, string $uri, array $data = [])
     {
         $tokens = (new AmoAuthService())->getTokens();
+
         $headers = [
             'Authorization' => 'Bearer ' . $tokens->access_token->token,
             'Content-type' => ' application/json'
         ];
+
         return $this->baseSendRequest($method, $uri, $data, $headers);
     }
 }

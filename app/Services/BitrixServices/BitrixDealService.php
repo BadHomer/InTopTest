@@ -5,7 +5,7 @@ namespace App\Services\BitrixServices;
 use App\Models\Lead;
 use App\Services\BitrixServices\Enums\BitrixDealOriginListItemsIds;
 use App\Services\BitrixServices\Enums\BitrixFieldsIds;
-use stdClass;
+
 
 class BitrixDealService
 {
@@ -36,9 +36,9 @@ class BitrixDealService
         return $response;
     }
 
-    private function dealToRequest(Lead $deal): stdClass
+    private function dealToRequest(Lead $deal): \stdClass
     {
-        $dealObj = new stdClass();
+        $dealObj = new \stdClass();
         $dealObj->TITLE = $deal->name;
         $dealObj->{BitrixFieldsIds::dealComment->value} = $deal->comment;
         $dealObj->{BitrixFieldsIds::dealOriginList->value} = BitrixDealOriginListItemsIds::site->value;

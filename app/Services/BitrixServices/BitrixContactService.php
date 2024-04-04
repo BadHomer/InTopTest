@@ -16,12 +16,12 @@ class BitrixContactService
 
     public function createContact(array $data)
     {
-
         $contact = Contact::create($data);
 
         $requestData = $this->contactToRequest($contact);
 
         $response = $this->requestService->sendRequest('/crm.contact.add', ['fields' => $requestData]);
+
         return $response->result;
     }
 
@@ -30,6 +30,7 @@ class BitrixContactService
         $phone = $this->createPhoneObj($contact);
 
         $contactObj = new \stdClass();
+
         $contactObj->NAME = $contact->name;
         $contactObj->PHONE = [$phone];
 
@@ -40,6 +41,7 @@ class BitrixContactService
     private function createPhoneObj(Contact $contact): \stdClass
     {
         $phone = new \stdClass();
+
         $phone->VALUE = $contact->telephone;
         $phone->VALUE_TYPE = 'WORK';
 

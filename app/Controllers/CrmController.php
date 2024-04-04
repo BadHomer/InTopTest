@@ -2,24 +2,22 @@
 
 namespace App\Controllers;
 
-use App\Services\AmoServices\AmoAuthService;
 use App\Services\AmoServices\AmoLeadService;
-use App\Services\BitrixServices\BitrixContactService;
 use App\Services\BitrixServices\BitrixDealService;
 use App\View\View;
 
-class CrmController extends BaseController
+class CrmController
 {
-    public function index(): false|string
+    public function index(): void
     {
-        return View::get('index');
+        View::get('index');
     }
 
-
-    public function createLead()
+    public function createLead(): void
     {
         (new BitrixDealService())->createDeal($_POST);
+        (new AmoLeadService())->createLead($_POST);
 
-        return View::get('success');
+        View::get('success');
     }
 }
