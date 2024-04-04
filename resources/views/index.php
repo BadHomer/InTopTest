@@ -31,11 +31,11 @@ body {
 <body>
     <form action="/" method="post">
         <label for="name">Имя</label>
-        <input type="text" id="name" name="name" required>
+        <input type="text" id="name" name="contact[name]" required>
         <label for="telephone">Телефон</label>
-        <input type="text" id="telephone" name="telephone" required>
+        <input type="text" id="telephone" name="contact[telephone]" required>
         <label for="comment">Комментарий</label>
-        <textarea id="comment" name="comment" required></textarea>
+        <textarea id="comment" name="lead[comment]" required></textarea>
         <input type="submit" value="Отправить">
     </form>
 </body>

@@ -6,22 +6,20 @@ use App\Controllers\CrmController;
 
 class Router
 {
-    private static array $actionArray;
+    private static array $actionArray = [
+        '/' => [
+            'GET' => [
+                'className' =>CrmController::class,
+                'methodName' => 'index'
+            ],
+            'POST' => [
+                'className' =>CrmController::class,
+                'methodName' => 'createLead'
+            ]
+        ],
+    ];
     public static function run(string $uri, string $method)
     {
-        self::$actionArray = [
-            '/' => [
-                'GET' => [
-                    'className' =>CrmController::class,
-                    'methodName' => 'index'
-                ],
-                'POST' => [
-                    'className' =>CrmController::class,
-                    'methodName' => 'createLead'
-                ]
-            ],
-        ];
-
         return self::startProcess(self::$actionArray[$uri][$method]);
     }
 

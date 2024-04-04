@@ -3,6 +3,9 @@
 namespace App\Controllers;
 
 use App\Services\AmoServices\AmoAuthService;
+use App\Services\AmoServices\AmoLeadService;
+use App\Services\BitrixServices\BitrixContactService;
+use App\Services\BitrixServices\BitrixDealService;
 use App\View\View;
 
 class CrmController extends BaseController
@@ -15,7 +18,8 @@ class CrmController extends BaseController
 
     public function createLead()
     {
-        echo (new AmoAuthService())->getNewTokens();
+        (new BitrixDealService())->createDeal($_POST);
+
         return View::get('success');
     }
 }

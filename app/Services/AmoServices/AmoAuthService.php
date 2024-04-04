@@ -2,20 +2,37 @@
 
 namespace App\Services\AmoServices;
 
-use GuzzleHttp\Client;
-use JsonException;
+use App\Services\AmoServices\Enums\AmoGrantTypeEnums;
 
 class AmoAuthService
 {
-    public function saveTokens(string $accessToken, string $refreshToken, int $expires_in)
+
+    private AmoRequestService $requestService;
+
+    public function __construct()
     {
-        $tokensFile = fopen($_SERVER['DOCUMENT_ROOT'] . '/../tokens', 'wb');
+        $this->requestService = new AmoRequestService();
+    }
+
+    private function getNewTokens()
+    {
+        $code = 'def502007c3676867cb61a1ebb7f2f7ba2cd6cad89beed8b9597aee5de4cc5a27cb6d10c379f35007cd32fa3684b3f1dd6eadae89bfc60944518c1ca16666391370abcc646da8206bbe85ef2ea2118ebe385813b90b79b846bd32713953193daf5359e09ec3e0cf813abed8d9e9429a7349fdbbbf3187d53b8726b94eb669b4fd5b8ca7ac7fb63cd546592abe54ef15d86c54dd16541cb0741617707af3e1b5713121949fd4cf36566d3084d26844be889f466316c95a9148842b7494f6487fb9cf972d0522eb500a98be7330620ceb4ccc285744af94ff70487bf9fae06890692526db58578d4e3979b2b7fb1f553b47611490a1be66fb3f1905cf2bfb4f8542a1db3fd1f51964c4d2cdf0b811dd9b96783d9c39f808bf7b696f0fe129f60a3f4b73c663b5a093c18c23d4ca9e90dc5be679e1bb5c7903bc84675530941aeff60dbec4853c6df27bca83139fd570fcafb42d823654447bc53daefaf5e93e7132d660a78d591844f129dd697b132b24b494ca1d4b8ff64d18bdddcc2758d0be762943499902dc7681cd35c8098fbbc2003a9ccd266b6fb9163c2098c241b75f7831cea32a69b7d2b4e1c43821deacbd98d525c99a8cd498abd9c5ac19d1c52f24bf7c26a3323055ce33a4a8fe0efb26682eb54fc343f42fd9738a5cf7fdc9dbd344c74fd5ebd82f91c';
+
+        $responseData = $this->requestService->sendAuthRequest(AmoGrantTypeEnums::authorization_code, $code);
+
+        return $this->saveTokens($responseData->access_token, $responseData->refresh_token, $responseData->expires_in);
+    }
+
+    private function saveTokens(string $accessToken, string $refreshToken, int $expires_in)
+    {
+        $tokensFile = fopen($_SERVER['DOCUMENT_ROOT'] . '/../tokens.json', 'wb');
 
         $tokensArray = [
             'access_token' => [
                 'token' => $accessToken,
                 'expires_in' => date("d/m/y H:i", strtotime("+{$expires_in} seconds")),
-            ]
+            ],
+            'refresh_token' => $refreshToken,
         ];
 
         $tokensJson = json_encode($tokensArray, JSON_THROW_ON_ERROR);
@@ -23,29 +40,34 @@ class AmoAuthService
         fwrite($tokensFile, $tokensJson);
 
         fclose($tokensFile);
-        return $tokensJson;
+
+        return json_decode($tokensJson);
     }
 
-    public function getExistTokens(): mixed
+    public function getTokens()
     {
-        $tokensJson = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/../tokens');
+        $tokens = $this->getTokensFromFile();
 
-        return json_decode($tokensJson, true, 512, JSON_THROW_ON_ERROR);
+        if ($tokens->access_token->expires_in <= date('d/m/y H:i')) {
+            $tokens = $this->refreshTokens();
+        }
+
+        return $tokens;
     }
 
-    public function getNewTokens()
+    private function getTokensFromFile(): mixed
     {
-        $subdomain = 'bespalvv2002';
-        $link = 'https://' . $subdomain . '.amocrm.ru/oauth2/access_token';
+        $tokensJson = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/../tokens.json');
 
-        $data = [
-            'client_id' => $_ENV['CLIENT_ID'],
-            'client_secret' => $_ENV['CLIENT_SECRET'],
-            'grant_type' => 'authorization_code',
-            'code' => 'def502007156d96170e79874f00704537fc1c4038823cd829efe79e864021409f63c99cc8ff442cd52029d848b4f4b1e22ff45f7def097a930d45fc5d11ceffc0b4d147a321bb292769844f69f8053ee64e4657a3827158f2d1c83b2ec4c573f392bf9ffd40e4b8d6c1542219259d5fac2a4bb2dfd0eac4b2520ecfeee9547f7a818a51aab514523d21d98277446eb318df4d2e0a60ac0d4cec97c75388629d61cf2427bb561bb1a79eb752e4f15199b678827e9eb15b846473a54c13993ce6b7d205d2a625ef425b66b8c28b5804a4fdc1d673e5dec24f27be98021ee8925fb54ab7b7dbea95da437b0113ee52ca63b8f007d3941a64c2646b7fba44d28cb5cc8b1a7ec76499ddb16d1e8e409a017dd582540fa179a59c8f19819ecfab1bc49978bfc52940c2bafc13904359791c1fa5b91716d499fcc83df1c13ac915dab8b68200766f6313a5fd4a68e98ea2027829f576c7cee4649462de1f6e82d28d2602d61d7a326359d9f0aebdc0f5726ba436286b33c594bb68c6bef4d5ec15d35e7d2eeccf7b73cd74720a0667564a2f784333316c92d97ada05f4f6f99cd3b128ae313f60e363e4950894080df44109cfe4a09c47f12d5a25fd62f453da6becbcfe36842e1681bd0a1360ba4d94d2af87c1acc080a8d04b21fe0ae688d1fc2f9656c5a9a37c4f6443530',
-            'redirect_uri' => 'http://test-smartcard.ru',
-        ];
+        return json_decode($tokensJson, false, 512, JSON_THROW_ON_ERROR);
+    }
 
-        return (new Client())->request('POST', $link, ['form_params' => $data])->getBody();
+    private function refreshTokens()
+    {
+        $tokens = $this->getTokensFromFile();
+
+        $refreshedTokens = $this->requestService->sendAuthRequest(AmoGrantTypeEnums::refresh_token, $tokens->refresh_token);
+
+        return $this->saveTokens($refreshedTokens->access_token, $refreshedTokens->refresh_token, $refreshedTokens->expires_in);
     }
 }
